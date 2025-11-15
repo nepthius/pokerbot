@@ -31,11 +31,8 @@ class Game:
         if self.round == 0:
             for player in self.number_players:
                 player.assignHand(self.deal())
-        
 
-        
-
-
+            print("Your current stats:")
 
 
 
@@ -54,6 +51,7 @@ if __name__ == "__main__":
     starting_amt = int(input("Please enter the starting amount: "))
 
     game = Game(starting_amt, players)
-    
+
+    player = Player(starting_amt=starting_amt)
     
     print(game.deal())
