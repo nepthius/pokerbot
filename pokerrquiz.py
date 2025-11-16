@@ -99,3 +99,105 @@ def best_hand_rank(c):
         if (best is None) or (r > best):
             best = r
     return best
+
+
+def simulate_equity(h, b=None, o=1, t=2000):
+    b = b
+    if not b:
+        b = []
+    d= make_deck()  
+    u = h +b
+    a =[]
+    for x in d:
+
+        if x not in u:
+            a.append(x)
+
+    w =0
+    q =0
+    l= 0
+    for temp in range(t):
+        random.shuffle(a)
+        p = []  
+        i = 0
+        for temptemp in range(o):
+            pair = [a[i], a[i+1]]
+            p.append(pair)
+            i += 2
+
+        n = 5 -len(b)
+        sb= b + a[i:i+n]
+
+        hr = best_hand_rank(h + sb)
+        orr = []
+        for yy in p:
+
+            orr.append(best_hand_rank(yy + sb))
+        tmp =[hr]
+        for rr in orr:
+            tmp.append(rr)
+        mx = max(tmp)
+        hb = (hr == mx)
+        ct = 0
+        for rr in orr:
+            if rr == mx:
+                ct += 1
+        if hb:
+            ct += 1
+        if hb:
+            if ct == 1:
+                w += 1
+            else:
+                q += 1
+        else:
+            l += 1
+    z = w + q + l
+    return w / z, q / z, l / z
+def run_equity_quiz():
+    print("=== Poker Equity Quiz (Custom Deck) ===\n")
+    while True:
+        d =make_deck()
+        random.shuffle(d)
+        hero =[d.pop(), d.pop()]
+        _n = random.choice([0,3,4,5])
+        board= []
+        for _i in range(_n):
+            board.append(d[_i])
+        n_opp = random.choice([1,2,3])
+
+
+
+        hero_parts = []
+        for c in hero:
+            hero_parts.append(card_to_str(c))
+        hero_str = " ".join(hero_parts)
+        if board:
+            board_parts = []
+            for c in board:
+
+                board_parts.append(card_to_str(c))
+            board_str =" ".join(board_parts)
+        else:
+            board_str= "(no board)"
+        print(f"\nHand: {hero_str} | Board: {board_str} | Opponents: {n_opp}")
+        win,tie, lose = simulate_equity(hero, board, n_opponents=n_opp)
+        eq = win +tie/2
+        eq_pct = round(eq*100,1)
+        guess = input("Guess win equity (in percent) or yo can press q to quit: ")
+        if guess.lower().startswith('q'):
+            break
+        try:
+            g = float(guess)
+        except:
+            print("Please enter a number")
+            continue
+        diff = abs(g - eq_pct)
+        if diff <= 5:
+            print(f"Almost correct! Actual: {eq_pct}%")
+        elif diff <= 10:
+            print(f"Meh (actual {eq_pct}%)")
+        else:
+            print(f"RUH ROH. Actual: {eq_pct}%")
+
+if __name__ == "__main__":
+    run_equity_quiz()
