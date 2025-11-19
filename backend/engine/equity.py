@@ -1,25 +1,8 @@
 import random
 import itertools
-from pokerhelpers import deck
+from .deck_engine import make_deck
 
-def make_deck():
-    ret = []
-    for r, s in deck.items():
-        for x in s:
-            ret.append((r,s))
-    return ret
-def card_to_str(card):
-    r, s = card 
-    name = ""
-    if r == 11:
-        name = 'J'
-    elif r == 12:
-        name = 'Q'
-    elif r == 13:
-        name = 'K'
-    elif r == 1:
-        name = 'A'
-    return f"{name}{s}"
+
 def rank_val(c): 
     return c[0]
 def str_to_card(s):
@@ -154,51 +137,3 @@ def simulate_equity(h, b=None, o=1, t=2000):
             l += 1
     z = w + q + l
     return w / z, q / z, l / z
-def run_equity_quiz():
-    print("=== Poker Equity Quiz (Custom Deck) ===\n")
-    while True:
-        d =make_deck()
-        random.shuffle(d)
-        hero =[d.pop(), d.pop()]
-        _n = random.choice([0,3,4,5])
-        board= []
-        for _i in range(_n):
-            board.append(d[_i])
-        n_opp = random.choice([1,2,3])
-
-
-
-        hero_parts = []
-        for c in hero:
-            hero_parts.append(card_to_str(c))
-        hero_str = " ".join(hero_parts)
-        if board:
-            board_parts = []
-            for c in board:
-
-                board_parts.append(card_to_str(c))
-            board_str =" ".join(board_parts)
-        else:
-            board_str= "(no board)"
-        print(f"\nHand: {hero_str} | Board: {board_str} | Opponents: {n_opp}")
-        win,tie, lose = simulate_equity(hero, board, n_opponents=n_opp)
-        eq = win +tie/2
-        eq_pct = round(eq*100,1)
-        guess = input("Guess win equity (in percent) or yo can press q to quit: ")
-        if guess.lower().startswith('q'):
-            break
-        try:
-            g = float(guess)
-        except:
-            print("Please enter a number")
-            continue
-        diff = abs(g - eq_pct)
-        if diff <= 5:
-            print(f"Almost correct! Actual: {eq_pct}%")
-        elif diff <= 10:
-            print(f"Meh (actual {eq_pct}%)")
-        else:
-            print(f"RUH ROH. Actual: {eq_pct}%")
-
-if __name__ == "__main__":
-    run_equity_quiz()
