@@ -3,12 +3,13 @@ import itertools
 from .deck_engine import make_deck
 
 
-def rank_val(c): 
-    return c[0]
+def rank_val(c):
+    r = c[0]
+    return 14 if r == 1 else r
 def str_to_card(s):
     r = s[:-1]
     ss = s[-1]
-    lookup = {'A':1, 'J':11, 'Q':12, 'K':13}
+    lookup = {'A':1, 'J':11, 'Q':12, 'K':13, 'T':10}
     try:
         rank = int(r)
     except:

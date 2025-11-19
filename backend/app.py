@@ -19,7 +19,7 @@ def get_equity():
 
 
 
-    win, tie, lose = simulate_equity(hero, board, o=n_opp, t=4000)
+    win, tie, lose = simulate_equity(hero, board, o=n_opp, t=3000)
     eq = (win + tie/2) * 100
     return jsonify({"equity": eq})
 
