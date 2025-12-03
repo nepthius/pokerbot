@@ -1,3 +1,6 @@
+import csv
+from pathlib import Path
+
 #ranks for now, will find better way to implement later
 RANKS   = ["A","K","Q","J","T","9","8","7","6","5","4","3","2"]
 RANK_INDEX = { r : i   for   i, r   in enumerate( RANKS )   }
