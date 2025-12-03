@@ -20,17 +20,13 @@ def str_to_card(s):
     return (rank, ss)
 
 def card_to_str(card):
-    r, s = card 
-    name = ""
-    if r == 11:
-        name = 'J'
-    elif r == 12:
-        name = 'Q'
-    elif r == 13:
-        name = 'K'
-    elif r == 1:
-        name = 'A'
-    return f"{name}{s}"
+    r, s = card
+
+    names ={1: 'A', 11: 'J', 12: 'Q', 13: 'K', 10: 'T'}
+
+    rank_str = names.get(r, str(r))
+    return f"{rank_str}{s}"
+
 def random_hand():
     d = make_deck() 
     random.shuffle(d)
