@@ -143,3 +143,128 @@ VS_OPEN_GROUP = {
     ("E","M"):  (PREMIUM | _pack("JJ"), STRONG & _pack("TT","AQs","AJs","KQs")),
     ("E","L"):  (PREMIUM | _pack("JJ","TT"), STRONG | _pack("AQo","AJs","KQs","QJs","JTs","TT","99")),
 }
+VS_3BET_4BET =PREMIUM | set(["QQ"]) 
+VS_3BET_CALL = STRONG | set(["KQs","AJs","JJ"])
+_SESSION: Dict[str, dict]={}
+
+def _deal_deck():
+    d = make_deck()
+    random.shuffle(d)
+    return d
+
+def _canon2(cards2):
+    return canonical_from_cards(cards2[0], cards2[1])
+
+def _decide_vs_open(hero_canon: str, hero_pos: str, opener_pos: str,
+                    spec3: dict, specC: dict) -> str:
+    """Return 'raise'|'call'|'fold' using specific maps, else group maps, else universal fallback."""
+    key = (hero_pos, opener_pos)
+    s3 = spec3.get(key)
+    sc = specC.get(key)
+    if s3 and hero_canon in s3: return "raise"
+    if sc and hero_canon in sc: return "call"
+
+    hg = hero_group(hero_pos)
+    og = opener_group(opener_pos)
+    gkey = (hg, og)
+    if gkey in VS_OPEN_GROUP:
+        g3, gc = VS_OPEN_GROUP[gkey]
+        if hero_canon in g3: return "raise"
+        if hero_canon in gc: return "call"
+
+    if hero_canon in PREMIUM: return "raise"
+    if hero_canon in STRONG:  return "call"
+    return "fold"
+
+def new_scenario(mode="cash") -> dict:
+    """Generate one 9-handed preflop scenario, stop at hero action."""
+    RFI   = RFI_CASH
+    SPEC3 = VS_OPEN_3BET_CASH_SPEC
+    SPECC = VS_OPEN_CALL_CASH_SPEC
+
+    deck = _deal_deck()
+    seats = POSITIONS_9[:]
+    hero_idx = random.randrange(len(seats))
+    hero_pos = seats[hero_idx]
+    hands = {p: [deck.pop(), deck.pop()] for p in seats}
+    actions = []
+    opened_by: Optional[str] = None
+    three_bet_by: Optional[str] = None
+
+    for step_pos in seats:
+        if step_pos == hero_pos:
+            break
+        hand_canon = _canon2(hands[step_pos])
+        act = "fold"
+        if opened_by is None and three_bet_by is None:
+            if hand_canon in RFI.get(step_pos, set()):
+                act = "open"
+                opened_by = step_pos
+        elif opened_by is not None and three_bet_by is None:
+            d = _decide_vs_open(hand_canon, step_pos, opened_by, SPEC3, SPECC)
+            if d == "raise":
+                act = "3bet"
+                three_bet_by = step_pos
+            elif d == "call":
+                act = "call"
+            else:
+                act = "fold"
+        else:
+            act = "fold"
+
+        actions.append({
+            "pos": step_pos,
+            "hand": f"{card_to_str(hands[step_pos][0])} {card_to_str(hands[step_pos][1])}",
+            "canonical": hand_canon,
+            "action": act
+        })
+
+    hero_hand = hands[hero_pos]
+    hero_canon = _canon2(hero_hand)
+    facing = "unopened" if opened_by is None else ("open" if three_bet_by is None else "3bet")
+    if facing == "unopened":
+        correct = "raise" if hero_canon in RFI.get(hero_pos, set()) else "fold"
+        if hero_pos == "BB" and opened_by is None:
+            correct = "raise" if hero_canon in RFI.get("BB", set()) else "fold"
+    elif facing == "open":
+        correct = _decide_vs_open(hero_canon, hero_pos, opened_by, SPEC3, SPECC)
+    else:
+        if hero_canon in VS_3BET_4BET:
+            correct = "raise"
+        elif hero_canon in VS_3BET_CALL:
+            correct = "call"
+        else:
+            correct = "fold"
+
+    sid = str(uuid.uuid4())
+    scenario = {
+        "id": sid,
+        "mode": mode,
+        "seats": seats,
+        "hero_pos": hero_pos,
+        "hero_hand": [card_to_str(hero_hand[0]), card_to_str(hero_hand[1])],
+        "hero_canonical": hero_canon,
+        "actions": actions,
+        "opened_by": opened_by,
+        "three_bet_by": three_bet_by,
+        "facing": facing,
+        "correct": correct,
+    }
+    _SESSION[sid] = scenario
+    return scenario
+def grade_answer(sid: str, user_action: str) -> dict:
+    sc = _SESSION.get(sid)
+    if not sc:
+        return {"error": "scenario not found"}
+    ua = user_action.lower()
+    is_correct = (ua == sc["correct"])
+    return {
+        "id": sid,
+        "hero_pos": sc["hero_pos"],
+        "hero_hand": sc["hero_hand"],
+        "hero_canonical": sc["hero_canonical"],
+        "facing": sc["facing"],
+        "your_action": ua,
+        "correct_action": sc["correct"],
+        "correct": is_correct,
+    }
