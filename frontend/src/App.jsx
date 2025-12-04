@@ -1,12 +1,23 @@
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import EquityQuiz from "./components/EquityQuiz";
+import PreflopTrainer from "./components/PreflopTrainer";
 
-function App() {
+export default function App() {
+  const nav = { display: "flex", gap: 16, padding: 12, background: "#eee" };
+  const link = { textDecoration: "none", color: "#333", fontWeight: "bold" };
   return (
-    <div className="p-10 bg-slate-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Poker Training Suite</h1>
-      <EquityQuiz />
-    </div>
+    <Router>
+      <nav style={nav}>
+        <Link to="/equity" style={link}>Equity</Link>
+        <Link to="/preflop" style={link}>Preflop Trainer</Link>
+      </nav>
+      <div style={{ padding: 20 }}>
+        <Routes>
+          <Route path="/" element={<EquityQuiz />} />
+          <Route path="/equity" element={<EquityQuiz />} />
+          <Route path="/preflop" element={<PreflopTrainer />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
-
-export default App;
