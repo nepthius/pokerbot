@@ -6,6 +6,7 @@ from engine.equity import simulate_equity
 from engine.ranges import (
     RANKS, load_range_csv, grid_from_range_map, canonical_from_text, action_for_hand
 )
+from engine.trainer import new_scenario, grade_answer
 app = Flask(__name__)
 CORS(app)
 RANGES_DIR = Path(__file__).parent / "data" / "ranges"
@@ -74,6 +75,24 @@ def check_hand_action( ):
         "canonical" : can ,
         "action" :   act
     })
+
+@app.route("/api/trainer/new", methods=["POST"])
+def trainer_new():
+    data= request.get_json(silent=True) or {}
+    mode= data.get("mode","cash")
+    sc =new_scenario(mode=mode)
+    return jsonify(sc)
+
+@app.route("/api/trainer/answer", methods=["POST"])
+def trainer_answer():
+    data = request.get_json()
+    sid = data.get("id")
+
+    action = data.get("action")
+    if action not in ("raise","call","fold"):
+        return jsonify({"error":"invalid action"}), 400
+    result = grade_answer(sid, action)
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5010, debug=True)
