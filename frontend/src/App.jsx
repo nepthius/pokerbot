@@ -1,23 +1,26 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import EquityQuiz from "./components/EquityQuiz";
-import PreflopTrainer from "./components/PreflopTrainer";
+import PreflopTablePro from "./components/PreflopTable";
+import PokerTerminology from "./components/PokerTerminology";
 
 export default function App() {
-  const nav = { display: "flex", gap: 16, padding: 12, background: "#eee" };
-  const link = { textDecoration: "none", color: "#333", fontWeight: "bold" };
+  const nav = { display: "flex", gap: 16, padding: 12, background: "#0e1116" };
+  const link = { textDecoration: "none", color: "#e6e6e6", fontWeight: 700 };
+
   return (
     <Router>
       <nav style={nav}>
         <Link to="/equity" style={link}>Equity</Link>
         <Link to="/preflop" style={link}>Preflop Trainer</Link>
+        <Link to="/terms" style={link}>Terminology</Link>
       </nav>
-      <div style={{ padding: 20 }}>
-        <Routes>
-          <Route path="/" element={<EquityQuiz />} />
-          <Route path="/equity" element={<EquityQuiz />} />
-          <Route path="/preflop" element={<PreflopTrainer />} />
-        </Routes>
-      </div>
+
+      <Routes>
+        <Route path="/" element={<PreflopTablePro />} />
+        <Route path="/equity" element={<EquityQuiz />} />
+        <Route path="/preflop" element={<PreflopTablePro />} />
+        <Route path="/terms" element={<PokerTerminology />} />
+      </Routes>
     </Router>
   );
 }
