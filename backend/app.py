@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pathlib import Path
+from engine.hand_strength import analyze_hand
 from engine.deck_engine import str_to_card
 from engine.equity import simulate_equity
 from engine.ranges import (
@@ -55,6 +56,15 @@ def  get_range_grid( name ):
             "grid"  : g
         })
 
+@app.route("/api/hand_strength", methods=["POST"])
+def hand_strength():
+    data = request.get_json()
+    raw = data.get("hand", "")
+    try:
+        out = analyze_hand(raw)
+        return jsonify(out)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @app.route( "/api/ranges/check",methods = [ "POST" ] )
